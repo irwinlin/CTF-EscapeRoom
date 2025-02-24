@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CTF Escape Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <style>
+    body { margin: 0; }
+  </style>
+</head>
+<body>
+  <script>
+    class TitleScene extends Phaser.Scene {
+      constructor() {
+        super("TitleScene");
+      }
+      
+      preload() {
+        // You can preload assets (such as a background image or logo) here if desired.
+      }
+      
+      create() {
+        let gameWidth = this.cameras.main.width;
+        let gameHeight = this.cameras.main.height;
+        
+        // Set a background color (or you can add an image)
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Add the title text.
+        let titleText = this.add.text(gameWidth / 2, gameHeight / 2 - 100, "My Game Title", {
+          font: "48px Arial",
+          fill: "#ffffff"
+        });
+        titleText.setOrigin(0.5);
+        
+        // Add a start button as text.
+        let startText = this.add.text(gameWidth / 2, gameHeight / 2 + 50, "Click to Start", {
+          font: "32px Arial",
+          fill: "#ffffff"
+        });
+        startText.setOrigin(0.5);
+        startText.setInteractive({ useHandCursor: true });
+        startText.on("pointerdown", () => {
+          // When clicked, navigate to room1.html (your game room).
+          window.location.href = "room1.html";
+        });
+      }
+    }
+    
+    const config = {
+      type: Phaser.AUTO,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      scene: [TitleScene],
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      }
+    };
+    
+    const game = new Phaser.Game(config);
+  </script>
+</body>
+</html>
