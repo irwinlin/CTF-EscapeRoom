@@ -19,8 +19,8 @@
       }
       
       create() {
-        // Flag to indicate if the second monitor has been clicked.
-        this.monitor2Clicked = false;
+        // Flag to indicate if correct credentials have been entered.
+        this.credentialsCorrect = false;
         
         // Create and store the background for repositioning.
         this.background = this.add.image(0, 0, 'room');
@@ -86,12 +86,9 @@
           let monitor = this.add.image(0, 0, 'monitorTexture').setInteractive();
           monitor.setDepth(3);
           monitor.name = `Monitor ${i+1}`;
+          // When any monitor is clicked, prompt for credentials.
           monitor.on('pointerdown', () => {
-            this.showMessage(`${monitor.name} clicked! Displaying live feed...`);
-            // If this is the second monitor, set the flag.
-            if (monitor.name === "Monitor 2") {
-              this.monitor2Clicked = true;
-            }
+            this.promptForCredentials();
           });
           this.monitors.push(monitor);
         }
@@ -101,8 +98,9 @@
         this.door.setDepth(3);
         this.door.name = "Door";
         this.door.on('pointerdown', () => {
-          if (this.monitor2Clicked) {
+          if (this.credentialsCorrect) {
             this.showMessage("Door clicked! Moving to the next room...");
+            // You might navigate to another scene or page here.
           } else {
             this.showMessage("Door locked! Complete task to move on...");
           }
@@ -118,14 +116,14 @@
         this.trashBin.setDepth(1);
         this.trashBin.name = "Trash Bin";
         this.trashBin.on('pointerdown', () => {
-          // Instead of showing standard trash bin text, show a hint.
-          this.showHint("Hint: Click Monitor 2 to unlock the door!");
+          // Show a hint with the credentials.
+          this.showHint("Username: user\nPassword: pass");
         });
         
         // Message text.
         this.messageText = this.add.text(20, 20, "Click a monitor, door, or trash bin.", { font: "20px Arial", fill: "#ffffff" });
         
-        // Create a hint text (styled as a sticky note) but keep it hidden initially.
+        // Create a hint text (styled like a sticky note) but keep it hidden initially.
         this.hintText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height * 0.2, "", {
           font: "20px Arial",
           fill: "#000000",
@@ -140,14 +138,32 @@
         this.scale.on('resize', this.updateLayout, this);
       }
       
+      promptForCredentials() {
+        // Prompt for username and password only if not already correct.
+        if (!this.credentialsCorrect) {
+          let username = window.prompt("Enter username:");
+          if (username !== null) {
+            let password = window.prompt("Enter password:");
+            if (password !== null) {
+              if (username === "user" && password === "pass") {
+                this.credentialsCorrect = true;
+                this.showMessage("Credentials accepted! Door unlocked.");
+              } else {
+                this.showMessage("Invalid credentials!");
+              }
+            }
+          }
+        } else {
+          this.showMessage("Credentials already accepted! Door unlocked.");
+        }
+      }
+      
       updateLayout() {
         let gameWidth = this.scale.width;
         let gameHeight = this.scale.height;
         
         // Center the background.
         this.background.setPosition(gameWidth / 2, gameHeight / 2);
-        // Optionally, cover the entire canvas:
-        // this.background.setDisplaySize(gameWidth, gameHeight);
         
         // --- Compute Scale Factors Based on Window Width ---
         // Table: occupy about 50% of game width relative to base width 300.
@@ -162,7 +178,7 @@
         let chairScale = (gameWidth * 0.10) / 80;
         this.chair.setScale(chairScale);
         
-        // Trash bin: using the updated scaling factor.
+        // Trash bin: scale relative to base width of 60.
         let trashScale = (gameWidth * 0.05) / 60;
         this.trashBin.setScale(trashScale);
         
@@ -216,6 +232,10 @@
       
       showMessage(msg) {
         this.messageText.setText(msg);
+        // Reset message text to default after 3 seconds.
+        this.time.delayedCall(3000, () => {
+          this.messageText.setText("Click a monitor, door, or trash bin.");
+        }, [], this);
       }
       
       showHint(msg) {
