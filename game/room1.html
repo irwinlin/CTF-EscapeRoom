@@ -21,6 +21,8 @@
       create() {
         // Flag to indicate if correct credentials have been entered.
         this.credentialsCorrect = false;
+        // Flag to track door state (closed initially).
+        this.doorIsOpen = false;
         
         // Create and store the background for repositioning.
         this.background = this.add.image(0, 0, 'room');
@@ -44,7 +46,7 @@
         trashGraphics.generateTexture('trashTexture', 60, 80);
         trashGraphics.destroy();
         
-        // Door texture: base size 80x150.
+        // Door texture (closed): base size 80x150.
         const doorGraphics = this.add.graphics();
         doorGraphics.fillStyle(0x8B4513, 1);
         doorGraphics.fillRect(0, 0, 80, 150);
@@ -52,6 +54,13 @@
         doorGraphics.fillCircle(65, 75, 5);
         doorGraphics.generateTexture('doorTexture', 80, 150);
         doorGraphics.destroy();
+        
+        // Door open texture: simulate an open door by drawing a panel 50px wide.
+        const doorOpenGraphics = this.add.graphics();
+        doorOpenGraphics.fillStyle(0x8B4513, 1);
+        doorOpenGraphics.fillRect(0, 0, 50, 150);
+        doorOpenGraphics.generateTexture('doorOpenTexture', 50, 150);
+        doorOpenGraphics.destroy();
         
         // Chair texture: base size 80x120.
         const chairGraphics = this.add.graphics();
@@ -99,8 +108,13 @@
         this.door.name = "Door";
         this.door.on('pointerdown', () => {
           if (this.credentialsCorrect) {
-            this.showMessage("Door clicked! Moving to the next room...");
-            // You might navigate to another scene or page here.
+            if (!this.doorIsOpen) {
+              this.door.setTexture('doorOpenTexture');
+              this.doorIsOpen = true;
+              this.showMessage("Door opened! Move on...");
+            } else {
+              this.showMessage("Door is already open!");
+            }
           } else {
             this.showMessage("Door locked! Complete task to move on...");
           }
@@ -164,6 +178,8 @@
         
         // Center the background.
         this.background.setPosition(gameWidth / 2, gameHeight / 2);
+        // Optionally, cover the entire canvas:
+        // this.background.setDisplaySize(gameWidth, gameHeight);
         
         // --- Compute Scale Factors Based on Window Width ---
         // Table: occupy about 50% of game width relative to base width 300.
