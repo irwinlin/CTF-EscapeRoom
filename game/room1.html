@@ -13,22 +13,21 @@
       }
       
       preload() {
-        // Load the new closed door image and the open door image with the updated size.
-        this.load.image('closeDoor', 'assets//closeDoor.png');
-        this.load.image('openDoor', 'assets//openDoor.png');  // Updated for open door texture
-        this.load.image('room', 'assets//brick.png');
+        // Load the door images and background.
+        this.load.image('closeDoor', 'assets/closeDoor.png');
+        this.load.image('openDoor', 'assets/openDoor.png');  // Open door texture
+        this.load.image('room', 'assets/brick.png');
       }
       
       create() {
-        // Flag to indicate if correct credentials have been entered.
+        // Flags.
         this.credentialsCorrect = false;
-        // Flag to track door state (closed initially).
         this.doorIsOpen = false;
         
-        // Create and store the background for repositioning.
+        // Create background.
         this.background = this.add.image(0, 0, 'room');
         
-        // ----- Create Dynamic Textures -----
+        // Create dynamic textures for other elements.
         // Monitor texture: base size 100x70.
         const monitorGraphics = this.add.graphics();
         monitorGraphics.fillStyle(0x808080, 1);
@@ -47,40 +46,19 @@
         trashGraphics.generateTexture('trashTexture', 60, 80);
         trashGraphics.destroy();
         
-        // Door texture (closed): now using the loaded 'closeDoor' texture.
-        const doorGraphics = this.add.graphics();
-        doorGraphics.fillStyle(0x8B4513, 1);
-        doorGraphics.fillRect(0, 0, 300, 100);  // Updated size to 300x100
-        doorGraphics.fillStyle(0x000000, 1);
-        doorGraphics.fillCircle(265, 50, 5);
-        doorGraphics.generateTexture('doorTexture', 300, 100);
-        doorGraphics.destroy();
-        
-        // Door open texture: simulate an open door by drawing a panel 50px wide.
-        const doorOpenGraphics = this.add.graphics();
-        doorOpenGraphics.fillStyle(0x8B4513, 1);
-        doorOpenGraphics.fillRect(0, 0, 50, 100);  // Adjusted size for consistency
-        doorOpenGraphics.generateTexture('doorOpenTexture', 50, 100);
-        doorOpenGraphics.destroy();
-        
         // Chair texture: base size 80x120.
         const chairGraphics = this.add.graphics();
         chairGraphics.fillStyle(0xA0522D, 1);
-        // Draw backrest.
         chairGraphics.fillRect(0, 0, 80, 40);
-        // Draw seat.
         chairGraphics.fillRect(0, 40, 80, 80);
         chairGraphics.generateTexture('chairTexture', 80, 120);
         chairGraphics.destroy();
         
-        // Table texture: increased base width to 300px and height remains 50px.
+        // Table texture: base size 300x50.
         const tableGraphics = this.add.graphics();
         tableGraphics.fillStyle(0x8B4513, 1);
-        // Draw tabletop: now 300px wide.
         tableGraphics.fillRect(0, 0, 300, 20);
-        // Draw left leg.
         tableGraphics.fillRect(10, 20, 10, 30);
-        // Draw right leg.
         tableGraphics.fillRect(280, 20, 10, 30);
         tableGraphics.generateTexture('tableTexture', 300, 50);
         tableGraphics.destroy();
@@ -90,29 +68,26 @@
         this.table = this.add.image(0, 0, 'tableTexture');
         this.table.setDepth(2);
         
-        // Create three monitors.
+        // Monitors.
         this.monitors = [];
         for (let i = 0; i < 3; i++) {
           let monitor = this.add.image(0, 0, 'monitorTexture').setInteractive();
           monitor.setDepth(3);
           monitor.name = `Monitor ${i+1}`;
-          // When any monitor is clicked, prompt for credentials.
           monitor.on('pointerdown', () => {
             this.promptForCredentials();
           });
           this.monitors.push(monitor);
         }
         
-        // Door: updated to use the new closed door image.
+        // Door – start with the closed door image.
         this.door = this.add.image(0, 0, 'closeDoor').setInteractive();
         this.door.setDepth(3);
         this.door.name = "Door";
         this.door.on('pointerdown', () => {
           if (this.credentialsCorrect) {
             if (!this.doorIsOpen) {
-              // Change the door texture to 'openDoor' when clicked.
-              this.door.setTexture('openDoor');  // Changed here to use 'openDoor' texture
-              this.door.setScale(doorScale);  // Ensure scale consistency
+              this.door.setTexture('openDoor');
               this.doorIsOpen = true;
               this.showMessage("Door opened! Move on...");
             } else {
@@ -129,18 +104,20 @@
         
         // Trash bin.
         this.trashBin = this.add.image(0, 0, 'trashTexture').setInteractive();
-        // Lower depth so it appears under the table.
         this.trashBin.setDepth(1);
         this.trashBin.name = "Trash Bin";
         this.trashBin.on('pointerdown', () => {
-          // Show a hint with the credentials.
           this.showHint("Username: user\nPassword: pass");
         });
+        
+        // Floor: a rectangle representing the floor.
+        this.floor = this.add.rectangle(0, 0, 100, 50, 0x654321).setOrigin(0.5, 0);
+        this.floor.setDepth(0);
         
         // Message text.
         this.messageText = this.add.text(20, 20, "Click a monitor, door, or trash bin.", { font: "20px Arial", fill: "#ffffff" });
         
-        // Create a hint text (styled like a sticky note) but keep it hidden initially.
+        // Hint text (sticky note style), hidden initially.
         this.hintText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height * 0.2, "", {
           font: "20px Arial",
           fill: "#000000",
@@ -150,13 +127,12 @@
         this.hintText.setOrigin(0.5);
         this.hintText.setVisible(false);
         
-        // Update layout on creation and when resized.
+        // Update layout initially and on window resize.
         this.updateLayout();
         this.scale.on('resize', this.updateLayout, this);
       }
       
       promptForCredentials() {
-        // Prompt for username and password only if not already correct.
         if (!this.credentialsCorrect) {
           let username = window.prompt("Enter username:");
           if (username !== null) {
@@ -182,7 +158,7 @@
         // Center the background.
         this.background.setPosition(gameWidth / 2, gameHeight / 2);
         
-        // --- Compute Scale Factors Based on Window Width ---
+        // --- Compute Scale Factors ---
         let tableScale = (gameWidth * 0.5) / 300;
         this.table.setScale(tableScale);
         
@@ -195,49 +171,66 @@
         let trashScale = (gameWidth * 0.05) / 60;
         this.trashBin.setScale(trashScale);
         
-        // Set door scale to 80% of original size.
-        let doorScale = 1.25;  // Adjust the door scale to 80%
+        let doorScale = (gameWidth * 0.2) / 80;
         this.door.setScale(doorScale);
-        this.door.setTexture('closeDoor');
+        // If the door is not open, ensure it shows the closed texture.
+        if (!this.doorIsOpen) {
+          this.door.setTexture('closeDoor');
+        }
+        
+        // Floor: set the floor width to match gameWidth.
+        this.floor.setSize(gameWidth, 50);
         
         // --- Position Elements ---
+        // Table: bottom center at 75% of game height.
         let tableX = gameWidth / 2;
         let tableY = gameHeight * 0.75;
         this.table.setPosition(tableX, tableY);
         let tableDisplayWidth = this.table.displayWidth;
         let tableDisplayHeight = this.table.displayHeight;
-        let tableTopY = tableY - tableDisplayHeight / 2;
+        let tableBottomY = tableY + tableDisplayHeight / 2;
         
+        // Monitors: position so their bottom aligns with the top of the table.
         let monitorHeight = 70 * monitorScale;
+        let tableTopY = tableY - tableDisplayHeight / 2;
         let monitorY = tableTopY - monitorHeight / 2;
-        let monitorLeftX   = tableX - tableDisplayWidth / 2 + tableDisplayWidth * 0.25;
+        let monitorLeftX = tableX - tableDisplayWidth / 2 + tableDisplayWidth * 0.25;
         let monitorCenterX = tableX;
-        let monitorRightX  = tableX + tableDisplayWidth / 2 - tableDisplayWidth * 0.25;
+        let monitorRightX = tableX + tableDisplayWidth / 2 - tableDisplayWidth * 0.25;
         this.monitors[0].setPosition(monitorLeftX, monitorY);
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
         
+        // Door: position the door so that its bottom aligns with the bottom of the table.
+        // Compute doorY from tableBottomY.
+        let doorDisplayHeight = this.door.displayHeight;
+        let doorY = tableBottomY - doorDisplayHeight / 2;
+        // Keep doorX as before (positioned toward the right).
         let doorMargin = 50;
-        let doorX = gameWidth - ((300 * doorScale) / 2) - doorMargin;  // Adjusted for new door size
-        let doorY = (gameHeight / 2) - 40;
+        let doorX = gameWidth - ((300 * doorScale) / 2) - doorMargin; 
         this.door.setPosition(doorX, doorY);
         
+        // Chair: center on the table.
         let chairX = tableX;
         let chairY = tableY;
         this.chair.setPosition(chairX, chairY);
         let chairBottomY = chairY + (this.chair.displayHeight / 2);
         
+        // Trash bin: align its bottom with the chair’s bottom.
         let trashY = chairBottomY - (this.trashBin.displayHeight / 2);
         let trashX = chairX + (150 * (gameWidth / 1024));
         this.trashBin.setPosition(trashX, trashY);
         
+        // Floor: position the floor so that its top edge touches the table's bottom.
+        this.floor.setPosition(gameWidth / 2, tableBottomY);
+        
+        // Hint text and message text.
         this.hintText.setPosition(gameWidth / 2, gameHeight * 0.2);
         this.messageText.setPosition(20, 20);
       }
       
       showMessage(msg) {
         this.messageText.setText(msg);
-        // Reset message text to default after 3 seconds.
         this.time.delayedCall(3000, () => {
           this.messageText.setText("Click a monitor, door, or trash bin.");
         }, [], this);
