@@ -13,10 +13,10 @@
       }
       
       preload() {
-        // Load the new closed door image and the open door image.
-        this.load.image('closeDoor', 'assets/closeDoor.png');
-        this.load.image('openDoor', 'assets/openDoor.png');  // Texture for open door
-        this.load.image('room', 'assets/brick.png');
+        // Load the new closed door image and the open door image with the updated size.
+        this.load.image('closeDoor', 'assets//closeDoor.png');
+        this.load.image('openDoor', 'assets//openDoor.png');  // Updated for open door texture
+        this.load.image('room', 'assets//brick.png');
       }
       
       create() {
@@ -47,7 +47,21 @@
         trashGraphics.generateTexture('trashTexture', 60, 80);
         trashGraphics.destroy();
         
-        // (Using loaded textures for door, so we won't generate door graphics here.)
+        // Door texture (closed): now using the loaded 'closeDoor' texture.
+        const doorGraphics = this.add.graphics();
+        doorGraphics.fillStyle(0x8B4513, 1);
+        doorGraphics.fillRect(0, 0, 300, 100);  // Updated size to 300x100
+        doorGraphics.fillStyle(0x000000, 1);
+        doorGraphics.fillCircle(265, 50, 5);
+        doorGraphics.generateTexture('doorTexture', 300, 100);
+        doorGraphics.destroy();
+        
+        // Door open texture: simulate an open door by drawing a panel 50px wide.
+        const doorOpenGraphics = this.add.graphics();
+        doorOpenGraphics.fillStyle(0x8B4513, 1);
+        doorOpenGraphics.fillRect(0, 0, 50, 100);  // Adjusted size for consistency
+        doorOpenGraphics.generateTexture('doorOpenTexture', 50, 100);
+        doorOpenGraphics.destroy();
         
         // Chair texture: base size 80x120.
         const chairGraphics = this.add.graphics();
@@ -89,14 +103,16 @@
           this.monitors.push(monitor);
         }
         
-        // Door: use the 'closeDoor' texture initially.
+        // Door: updated to use the new closed door image.
         this.door = this.add.image(0, 0, 'closeDoor').setInteractive();
         this.door.setDepth(3);
         this.door.name = "Door";
         this.door.on('pointerdown', () => {
           if (this.credentialsCorrect) {
             if (!this.doorIsOpen) {
-              this.door.setTexture('openDoor');
+              // Change the door texture to 'openDoor' when clicked.
+              this.door.setTexture('openDoor');  // Changed here to use 'openDoor' texture
+              this.door.setScale(doorScale);  // Ensure scale consistency
               this.doorIsOpen = true;
               this.showMessage("Door opened! Move on...");
             } else {
@@ -179,12 +195,10 @@
         let trashScale = (gameWidth * 0.05) / 60;
         this.trashBin.setScale(trashScale);
         
-        // Set door scale and, if not open, ensure it uses the closed door texture.
-        let doorScale = (gameWidth * 0.2) / 80;
+        // Set door scale to 80% of original size.
+        let doorScale = 1.25;  // Adjust the door scale to 80%
         this.door.setScale(doorScale);
-        if (!this.doorIsOpen) {
-          this.door.setTexture('closeDoor');
-        }
+        this.door.setTexture('closeDoor');
         
         // --- Position Elements ---
         let tableX = gameWidth / 2;
