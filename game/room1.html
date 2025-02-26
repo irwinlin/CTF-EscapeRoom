@@ -55,15 +55,6 @@
         doorGraphics.fillCircle(265, 50, 5);
         doorGraphics.generateTexture('doorTexture', 300, 100);
         doorGraphics.destroy();
-
-        /*/ Door texture (closed): now using the loaded 'closeDoor' texture.
-        const doorOpenGraphics = this.add.graphics();
-        doorOpenGraphics.fillStyle(0x8B4513, 1);
-        doorOpenGraphics.fillRect(0, 0, 300, 100);  // Updated size to 300x100
-        doorOpenGraphics.fillStyle(0x000000, 1);
-        doorOpenGraphics.fillCircle(265, 50, 5);
-        doorGraphics.generateTexture('doorTexture', 300, 100);
-        doorOpenGraphics.destroy();*/
         
         // Door open texture: simulate an open door by drawing a panel 50px wide.
         const doorOpenGraphics = this.add.graphics();
