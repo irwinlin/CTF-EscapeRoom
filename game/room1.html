@@ -13,9 +13,10 @@
       }
       
       preload() {
-        // Load a background image.
-        this.load.setBaseURL('https://labs.phaser.io');
-        this.load.image('room', 'assets/skies/space3.png');
+        // Load the new closed door image and the open door image with the updated size.
+        this.load.image('closeDoor', 'assets//closeDoor.png');
+        this.load.image('openDoor', 'assets\\openDoor.png');  // Updated for open door texture
+        this.load.image('room', 'assets//brick.png');
       }
       
       create() {
@@ -46,20 +47,29 @@
         trashGraphics.generateTexture('trashTexture', 60, 80);
         trashGraphics.destroy();
         
-        // Door texture (closed): base size 80x150.
+        // Door texture (closed): now using the loaded 'closeDoor' texture.
         const doorGraphics = this.add.graphics();
         doorGraphics.fillStyle(0x8B4513, 1);
-        doorGraphics.fillRect(0, 0, 80, 150);
+        doorGraphics.fillRect(0, 0, 300, 100);  // Updated size to 300x100
         doorGraphics.fillStyle(0x000000, 1);
-        doorGraphics.fillCircle(65, 75, 5);
-        doorGraphics.generateTexture('doorTexture', 80, 150);
+        doorGraphics.fillCircle(265, 50, 5);
+        doorGraphics.generateTexture('doorTexture', 300, 100);
         doorGraphics.destroy();
+
+        /*/ Door texture (closed): now using the loaded 'closeDoor' texture.
+        const doorOpenGraphics = this.add.graphics();
+        doorOpenGraphics.fillStyle(0x8B4513, 1);
+        doorOpenGraphics.fillRect(0, 0, 300, 100);  // Updated size to 300x100
+        doorOpenGraphics.fillStyle(0x000000, 1);
+        doorOpenGraphics.fillCircle(265, 50, 5);
+        doorGraphics.generateTexture('doorTexture', 300, 100);
+        doorOpenGraphics.destroy();*/
         
         // Door open texture: simulate an open door by drawing a panel 50px wide.
         const doorOpenGraphics = this.add.graphics();
         doorOpenGraphics.fillStyle(0x8B4513, 1);
-        doorOpenGraphics.fillRect(0, 0, 50, 150);
-        doorOpenGraphics.generateTexture('doorOpenTexture', 50, 150);
+        doorOpenGraphics.fillRect(0, 0, 50, 100);  // Adjusted size for consistency
+        doorOpenGraphics.generateTexture('doorOpenTexture', 50, 100);
         doorOpenGraphics.destroy();
         
         // Chair texture: base size 80x120.
@@ -102,14 +112,16 @@
           this.monitors.push(monitor);
         }
         
-        // Door.
-        this.door = this.add.image(0, 0, 'doorTexture').setInteractive();
+        // Door: updated to use the new closed door image.
+        this.door = this.add.image(0, 0, 'closeDoor').setInteractive();
         this.door.setDepth(3);
         this.door.name = "Door";
         this.door.on('pointerdown', () => {
           if (this.credentialsCorrect) {
             if (!this.doorIsOpen) {
-              this.door.setTexture('doorOpenTexture');
+              // Change the door texture to 'openDoor' when clicked.
+              this.door.setTexture('openDoor');  // Changed here to use 'openDoor' texture
+              this.door.setScale(doorScale);  // Ensure scale consistency
               this.doorIsOpen = true;
               this.showMessage("Door opened! Move on...");
             } else {
@@ -178,32 +190,26 @@
         
         // Center the background.
         this.background.setPosition(gameWidth / 2, gameHeight / 2);
-        // Optionally, cover the entire canvas:
-        // this.background.setDisplaySize(gameWidth, gameHeight);
         
         // --- Compute Scale Factors Based on Window Width ---
-        // Table: occupy about 50% of game width relative to base width 300.
         let tableScale = (gameWidth * 0.5) / 300;
         this.table.setScale(tableScale);
         
-        // Monitors: scale relative to base (100px width).
         let monitorScale = (gameWidth * 0.12) / 100;
         this.monitors.forEach(monitor => monitor.setScale(monitorScale));
         
-        // Chair: scale down further relative to base width of 80.
         let chairScale = (gameWidth * 0.10) / 80;
         this.chair.setScale(chairScale);
         
-        // Trash bin: scale relative to base width of 60.
         let trashScale = (gameWidth * 0.05) / 60;
         this.trashBin.setScale(trashScale);
         
-        // Door: scale relative to base width of 80.
-        let doorScale = (gameWidth * 0.2) / 80;
+        // Set door scale to 80% of original size.
+        let doorScale = 1.25;  // Adjust the door scale to 80%
         this.door.setScale(doorScale);
+        this.door.setTexture('closeDoor');
         
         // --- Position Elements ---
-        // Table: bottom center at 75% of game height.
         let tableX = gameWidth / 2;
         let tableY = gameHeight * 0.75;
         this.table.setPosition(tableX, tableY);
@@ -211,7 +217,6 @@
         let tableDisplayHeight = this.table.displayHeight;
         let tableTopY = tableY - tableDisplayHeight / 2;
         
-        // Monitors: position three monitors so that their bottom edges sit on the table top.
         let monitorHeight = 70 * monitorScale;
         let monitorY = tableTopY - monitorHeight / 2;
         let monitorLeftX   = tableX - tableDisplayWidth / 2 + tableDisplayWidth * 0.25;
@@ -221,28 +226,21 @@
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
         
-        // Door: position with a 50px margin from the right edge.
         let doorMargin = 50;
-        let doorX = gameWidth - ((80 * doorScale) / 2) - doorMargin;
+        let doorX = gameWidth - ((300 * doorScale) / 2) - doorMargin;  // Adjusted for new door size
         let doorY = (gameHeight / 2) - 40;
         this.door.setPosition(doorX, doorY);
         
-        // Chair: center it on the table.
         let chairX = tableX;
         let chairY = tableY;
         this.chair.setPosition(chairX, chairY);
         let chairBottomY = chairY + (this.chair.displayHeight / 2);
         
-        // Trash bin: align its bottom with the chair's bottom.
         let trashY = chairBottomY - (this.trashBin.displayHeight / 2);
-        // Place trash bin farther to the right of the chair.
         let trashX = chairX + (150 * (gameWidth / 1024));
         this.trashBin.setPosition(trashX, trashY);
         
-        // Position the hint text at the top center.
         this.hintText.setPosition(gameWidth / 2, gameHeight * 0.2);
-        
-        // Update message text position.
         this.messageText.setPosition(20, 20);
       }
       
@@ -255,10 +253,8 @@
       }
       
       showHint(msg) {
-        // Show the hint text (styled like a sticky note).
         this.hintText.setText(msg);
         this.hintText.setVisible(true);
-        // Hide the hint after 3 seconds.
         this.time.delayedCall(3000, () => {
           this.hintText.setVisible(false);
         }, [], this);
