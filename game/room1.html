@@ -24,7 +24,7 @@
         this.credentialsCorrect = false;
         this.doorIsOpen = false;
         
-        // Create the background and set its depth to -1 so it doesn't cover the floor.
+        // Create the background and set its depth to -1.
         this.background = this.add.image(0, 0, 'room');
         this.background.setDepth(-1);
         
@@ -81,7 +81,7 @@
           this.monitors.push(monitor);
         }
         
-        // Door: use the 'closeDoor' texture initially.
+        // Door: start with the closed door texture.
         this.door = this.add.image(0, 0, 'closeDoor').setInteractive();
         this.door.setDepth(3);
         this.door.name = "Door";
@@ -111,7 +111,7 @@
           this.showHint("Username: user\nPassword: pass");
         });
         
-        // Floor: a rectangle representing the floor.
+        // Floor: a rectangle that will cover the entire bottom.
         this.floor = this.add.rectangle(0, 0, 100, 50, 0x654321).setOrigin(0.5, 0);
         this.floor.setDepth(0);
         
@@ -128,7 +128,7 @@
         this.hintText.setOrigin(0.5);
         this.hintText.setVisible(false);
         
-        // Update layout initially and on window resize.
+        // Update layout on creation and on window resize.
         this.updateLayout();
         this.scale.on('resize', this.updateLayout, this);
       }
@@ -172,16 +172,19 @@
         let trashScale = (gameWidth * 0.05) / 60;
         this.trashBin.setScale(trashScale);
         
-        let doorScale = (gameWidth * 0.2) / 80;
-        this.door.setScale(doorScale);
+        // For the door, we force a display size so both closed and open textures are identical.
+        // We'll use 20% of the game width for the door's width.
+        let doorDisplayWidth = gameWidth * 0.2;
+        // Assuming a 3:1 aspect ratio (as our previous dynamic door was 300x100),
+        // set doorDisplayHeight = doorDisplayWidth / 3.
+        let doorDisplayHeight = doorDisplayWidth / 3;
+        this.door.setDisplaySize(doorDisplayWidth, doorDisplayHeight);
         if (!this.doorIsOpen) {
           this.door.setTexture('closeDoor');
         }
         
-        // Floor: set floor width to match gameWidth.
-        this.floor.setSize(gameWidth, 50);
-        
         // --- Position Elements ---
+        // Table: bottom center at 75% of game height.
         let tableX = gameWidth / 2;
         let tableY = gameHeight * 0.75;
         this.table.setPosition(tableX, tableY);
@@ -189,7 +192,7 @@
         let tableDisplayHeight = this.table.displayHeight;
         let tableBottomY = tableY + tableDisplayHeight / 2;
         
-        // Monitors: position them so their bottom aligns with the top of the table.
+        // Monitors: position so their bottom edges sit on the top of the table.
         let monitorHeight = 70 * monitorScale;
         let tableTopY = tableY - tableDisplayHeight / 2;
         let monitorY = tableTopY - monitorHeight / 2;
@@ -200,28 +203,30 @@
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
         
-        // Door: align its bottom with the bottom of the table.
-        let doorDisplayHeight = this.door.displayHeight;
-        let doorY = tableBottomY - doorDisplayHeight / 2;
-        let doorMargin = 50;
-        let doorX = gameWidth - ((300 * doorScale) / 2) - doorMargin;
+        // Door: align its bottom with the table's bottom, and shift it a bit further to the right.
+        let doorMargin = 70;  // Increased margin moves door further right.
+        let doorX = gameWidth - doorDisplayWidth/2 - doorMargin;
+        let doorY = tableBottomY - doorDisplayHeight/2;
         this.door.setPosition(doorX, doorY);
         
         // Chair: center on the table.
         let chairX = tableX;
         let chairY = tableY;
         this.chair.setPosition(chairX, chairY);
-        let chairBottomY = chairY + (this.chair.displayHeight / 2);
+        let chairBottomY = chairY + this.chair.displayHeight / 2;
         
-        // Trash bin: align its bottom with the chair’s bottom.
-        let trashY = chairBottomY - (this.trashBin.displayHeight / 2);
+        // Trash bin: align its bottom with the chair's bottom.
+        let trashY = chairBottomY - this.trashBin.displayHeight / 2;
         let trashX = chairX + (150 * (gameWidth / 1024));
         this.trashBin.setPosition(trashX, trashY);
         
-        // Floor: position so that its top edge touches the table's bottom.
+        // Floor: cover the entire bottom from the table bottom to the bottom of the game.
+        let floorHeight = gameHeight - tableBottomY;
+        this.floor.setSize(gameWidth, floorHeight);
+        // Position the floor so its top edge is at tableBottomY.
         this.floor.setPosition(gameWidth / 2, tableBottomY);
         
-        // Hint text and message text positions.
+        // Update positions for hint text and message text.
         this.hintText.setPosition(gameWidth / 2, gameHeight * 0.2);
         this.messageText.setPosition(20, 20);
       }
