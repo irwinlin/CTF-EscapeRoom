@@ -15,7 +15,7 @@
       preload() {
         // Load the door images and background.
         this.load.image('closeDoor', 'assets/closeDoor.png');
-        this.load.image('openDoor', 'assets/openDoor.png');  // Open door texture
+        this.load.image('openDoor', 'assets/openDoor.png');
         this.load.image('room', 'assets/brick.png');
       }
       
@@ -24,10 +24,11 @@
         this.credentialsCorrect = false;
         this.doorIsOpen = false;
         
-        // Create background.
+        // Create the background and set its depth to -1 so it doesn't cover the floor.
         this.background = this.add.image(0, 0, 'room');
+        this.background.setDepth(-1);
         
-        // Create dynamic textures for other elements.
+        // ----- Create Dynamic Textures -----
         // Monitor texture: base size 100x70.
         const monitorGraphics = this.add.graphics();
         monitorGraphics.fillStyle(0x808080, 1);
@@ -68,7 +69,7 @@
         this.table = this.add.image(0, 0, 'tableTexture');
         this.table.setDepth(2);
         
-        // Monitors.
+        // Create three monitors.
         this.monitors = [];
         for (let i = 0; i < 3; i++) {
           let monitor = this.add.image(0, 0, 'monitorTexture').setInteractive();
@@ -80,7 +81,7 @@
           this.monitors.push(monitor);
         }
         
-        // Door – start with the closed door image.
+        // Door: use the 'closeDoor' texture initially.
         this.door = this.add.image(0, 0, 'closeDoor').setInteractive();
         this.door.setDepth(3);
         this.door.name = "Door";
@@ -173,16 +174,14 @@
         
         let doorScale = (gameWidth * 0.2) / 80;
         this.door.setScale(doorScale);
-        // If the door is not open, ensure it shows the closed texture.
         if (!this.doorIsOpen) {
           this.door.setTexture('closeDoor');
         }
         
-        // Floor: set the floor width to match gameWidth.
+        // Floor: set floor width to match gameWidth.
         this.floor.setSize(gameWidth, 50);
         
         // --- Position Elements ---
-        // Table: bottom center at 75% of game height.
         let tableX = gameWidth / 2;
         let tableY = gameHeight * 0.75;
         this.table.setPosition(tableX, tableY);
@@ -190,7 +189,7 @@
         let tableDisplayHeight = this.table.displayHeight;
         let tableBottomY = tableY + tableDisplayHeight / 2;
         
-        // Monitors: position so their bottom aligns with the top of the table.
+        // Monitors: position them so their bottom aligns with the top of the table.
         let monitorHeight = 70 * monitorScale;
         let tableTopY = tableY - tableDisplayHeight / 2;
         let monitorY = tableTopY - monitorHeight / 2;
@@ -201,13 +200,11 @@
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
         
-        // Door: position the door so that its bottom aligns with the bottom of the table.
-        // Compute doorY from tableBottomY.
+        // Door: align its bottom with the bottom of the table.
         let doorDisplayHeight = this.door.displayHeight;
         let doorY = tableBottomY - doorDisplayHeight / 2;
-        // Keep doorX as before (positioned toward the right).
         let doorMargin = 50;
-        let doorX = gameWidth - ((300 * doorScale) / 2) - doorMargin; 
+        let doorX = gameWidth - ((300 * doorScale) / 2) - doorMargin;
         this.door.setPosition(doorX, doorY);
         
         // Chair: center on the table.
@@ -221,10 +218,10 @@
         let trashX = chairX + (150 * (gameWidth / 1024));
         this.trashBin.setPosition(trashX, trashY);
         
-        // Floor: position the floor so that its top edge touches the table's bottom.
+        // Floor: position so that its top edge touches the table's bottom.
         this.floor.setPosition(gameWidth / 2, tableBottomY);
         
-        // Hint text and message text.
+        // Hint text and message text positions.
         this.hintText.setPosition(gameWidth / 2, gameHeight * 0.2);
         this.messageText.setPosition(20, 20);
       }
