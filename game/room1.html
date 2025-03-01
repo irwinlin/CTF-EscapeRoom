@@ -84,8 +84,6 @@
         // Door: start with the closed door texture.
         this.door = this.add.image(0, 0, 'closeDoor').setInteractive();
         this.door.setDepth(3);
-        // Set the door's origin so its bottom edge is its anchor.
-        this.door.setOrigin(0.5, 1);
         this.door.name = "Door";
         this.door.on('pointerdown', () => {
           if (this.credentialsCorrect) {
@@ -113,7 +111,7 @@
           this.showHint("Username: user\nPassword: pass");
         });
         
-        // Floor: a rectangle that covers the entire bottom.
+        // Floor: a rectangle that will cover the entire bottom.
         this.floor = this.add.rectangle(0, 0, 100, 50, 0x654321).setOrigin(0.5, 0);
         this.floor.setDepth(0);
         
@@ -130,7 +128,7 @@
         this.hintText.setOrigin(0.5);
         this.hintText.setVisible(false);
         
-        // Update layout on creation and when resized.
+        // Update layout on creation and on window resize.
         this.updateLayout();
         this.scale.on('resize', this.updateLayout, this);
       }
@@ -174,9 +172,10 @@
         let trashScale = (gameWidth * 0.05) / 60;
         this.trashBin.setScale(trashScale);
         
-        // For the door, force a display size of 170x300.
-        const doorDisplayWidth = 170;
-        const doorDisplayHeight = 300;
+        // For the door, force a display size so both closed and open textures are identical.
+        let doorDisplayWidth = gameWidth * 0.2;
+        // Change the aspect ratio: now the door is taller.
+        let doorDisplayHeight = doorDisplayWidth * 1.5;  
         this.door.setDisplaySize(doorDisplayWidth, doorDisplayHeight);
         if (!this.doorIsOpen) {
           this.door.setTexture('closeDoor');
@@ -202,12 +201,10 @@
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
         
-        // Door: position it so that its bottom aligns with the top of the floor.
-        // The floor's top edge is at tableBottomY.
-        let doorMargin = 70;  // Adjust margin to shift door further right.
+        // Door: align its bottom with the table's bottom and shift it further to the right.
+        let doorMargin = 70;
         let doorX = gameWidth - doorDisplayWidth/2 - doorMargin;
-        // With door origin set to (0.5,1), setting door.y to tableBottomY places its bottom at tableBottomY.
-        let doorY = tableBottomY;
+        let doorY = tableBottomY - doorDisplayHeight/2;
         this.door.setPosition(doorX, doorY);
         
         // Chair: center on the table.
