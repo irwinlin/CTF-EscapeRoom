@@ -68,18 +68,28 @@
         chairGraphics.fillRect(0, 0, 80, 40);
         // Draw seat.
         chairGraphics.fillRect(0, 40, 80, 80);
-        // Draw border.
         chairGraphics.lineStyle(2, 0x000000, 1);
         chairGraphics.strokeRect(0, 0, 80, 120);
         chairGraphics.generateTexture('chairTexture', 80, 120);
         chairGraphics.destroy();
         
-        // Table texture.
+        // Table texture with borders.
         const tableGraphics = this.add.graphics();
         tableGraphics.fillStyle(0x8B4513, 1);
+        // Draw tabletop.
         tableGraphics.fillRect(0, 0, 300, 20);
+        // Draw left leg.
         tableGraphics.fillRect(10, 20, 10, 30);
+        // Draw right leg.
         tableGraphics.fillRect(280, 20, 10, 30);
+        // Add borders for each part.
+        tableGraphics.lineStyle(2, 0x000000, 1);
+        // Border for tabletop.
+        tableGraphics.strokeRect(0, 0, 300, 20);
+        // Border for left leg.
+        tableGraphics.strokeRect(10, 20, 10, 30);
+        // Border for right leg.
+        tableGraphics.strokeRect(280, 20, 10, 30);
         tableGraphics.generateTexture('tableTexture', 300, 50);
         tableGraphics.destroy();
         
@@ -96,19 +106,19 @@
         doorClosedGraphics.destroy();
         
         // Open door: 200x392 with borders on top, left, and right (no bottom border),
-        // a thick black vertical bar on the left, and a doorknob on the left.
+        // a thick black vertical bar on the left, and doorknob on the left.
         const doorOpenGraphics = this.add.graphics();
         doorOpenGraphics.fillStyle(0xcccccc, 1);
         doorOpenGraphics.fillRect(0, 0, 200, 392);
-        // Draw a thick black vertical bar on the left side.
+        // Thick black vertical bar on the left.
         doorOpenGraphics.lineStyle(10, 0x000000, 1);
         doorOpenGraphics.strokeLineShape(new Phaser.Geom.Line(5, 0, 5, 392));
-        // Draw borders on top, left, and right.
+        // Borders on top, left, and right.
         doorOpenGraphics.lineStyle(4, 0x000000, 1);
         doorOpenGraphics.strokeLineShape(new Phaser.Geom.Line(0, 0, 200, 0));  // Top border.
         doorOpenGraphics.strokeLineShape(new Phaser.Geom.Line(0, 0, 0, 392));   // Left border.
         doorOpenGraphics.strokeLineShape(new Phaser.Geom.Line(200, 0, 200, 392)); // Right border.
-        // Draw doorknob on the left.
+        // Doorknob on the left.
         doorOpenGraphics.fillStyle(0x000000, 1);
         doorOpenGraphics.fillCircle(20, 196, 10);
         doorOpenGraphics.generateTexture('doorOpen', 200, 392);
@@ -170,7 +180,6 @@
         
         // Trash bin.
         this.trashBin = this.add.image(0, 0, 'trashTexture').setInteractive();
-        // Bring trash bin above the separator.
         this.trashBin.setDepth(2);
         this.trashBin.name = "Trash Bin";
         this.trashBin.on('pointerdown', () => { this.showHint("Username: user\nPassword: pass"); });
@@ -190,7 +199,7 @@
         });
         
         // Hint text.
-        this.hintText = this.add.text(this.cameras.main.width/2, this.cameras.main.height*0.2, "", {
+        this.hintText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height * 0.2, "", {
           font: "20px Arial",
           fill: "#000000",
           backgroundColor: "#ffff88",
@@ -199,7 +208,7 @@
         this.hintText.setOrigin(0.5);
         this.hintText.setVisible(false);
         
-        // Level counter (bottom left).
+        // Level counter (bottom left) showing "Level 1".
         this.levelCounter = this.add.text(20, this.cameras.main.height - 20, "Level 1", {
           font: "20px Arial",
           fill: "#ffffff"
@@ -236,7 +245,7 @@
         let gameHeight = this.scale.height;
         
         // Center and scale the background.
-        this.background.setPosition(gameWidth/2, gameHeight/2);
+        this.background.setPosition(gameWidth / 2, gameHeight / 2);
         this.background.setDisplaySize(gameWidth, gameHeight);
         
         // --- Compute Scale Factors ---
@@ -261,8 +270,8 @@
         
         // --- Position Elements ---
         // Table: bottom center at 75% of game height.
-        let tableX = gameWidth/2;
-        let tableY = gameHeight*0.75;
+        let tableX = gameWidth / 2;
+        let tableY = gameHeight * 0.75;
         this.table.setPosition(tableX, tableY);
         let tableDisplayWidth = this.table.displayWidth;
         let tableDisplayHeight = this.table.displayHeight;
@@ -271,11 +280,11 @@
         
         // Monitors (original row): position so their bottom edges sit on the top of the table.
         let monitorHeight = 70 * monitorScale;
-        let tableTopY = tableY - tableDisplayHeight/2;
-        let monitorY = tableTopY - monitorHeight/2;
-        let monitorLeftX = tableX - tableDisplayWidth/2 + tableDisplayWidth*0.25;
+        let tableTopY = tableY - tableDisplayHeight / 2;
+        let monitorY = tableTopY - monitorHeight / 2;
+        let monitorLeftX = tableX - tableDisplayWidth / 2 + tableDisplayWidth * 0.25;
         let monitorCenterX = tableX;
-        let monitorRightX = tableX + tableDisplayWidth/2 - tableDisplayWidth*0.25;
+        let monitorRightX = tableX + tableDisplayWidth / 2 - tableDisplayWidth * 0.25;
         this.monitors[0].setPosition(monitorLeftX, monitorY);
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
@@ -299,27 +308,27 @@
         let chairX = tableX;
         let chairY = tableY;
         this.chair.setPosition(chairX, chairY);
-        let chairBottomY = chairY + this.chair.displayHeight/2;
+        let chairBottomY = chairY + this.chair.displayHeight / 2;
         
         // Trash bin: align its bottom with the chair's bottom.
-        let trashY = chairBottomY - this.trashBin.displayHeight/2;
-        let trashX = chairX + (150 * (gameWidth/1024));
+        let trashY = chairBottomY - this.trashBin.displayHeight / 2;
+        let trashX = chairX + (150 * (gameWidth / 1024));
         this.trashBin.setPosition(trashX, trashY);
         
         // Floor: cover entire bottom from tableBottomY to game bottom.
         let floorHeight = gameHeight - tableBottomY;
         this.floor.setSize(gameWidth, floorHeight);
-        this.floor.setPosition(gameWidth/2, tableBottomY);
+        this.floor.setPosition(gameWidth / 2, tableBottomY);
         
-        // Separator: a black line to separate the background and floor.
+        // Separator: a black line to separate background and floor.
         this.separator.setSize(gameWidth, 2);
-        this.separator.setPosition(gameWidth/2, tableBottomY);
+        this.separator.setPosition(gameWidth / 2, tableBottomY);
         
-        // Level counter: bottom left of the screen.
+        // Level counter: bottom left.
         this.levelCounter.setPosition(20, gameHeight - 20);
         
         // Update hint and message text positions.
-        this.hintText.setPosition(gameWidth/2, gameHeight*0.2);
+        this.hintText.setPosition(gameWidth / 2, gameHeight * 0.2);
         this.messageText.setPosition(20, 20);
       }
       
