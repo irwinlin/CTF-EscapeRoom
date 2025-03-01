@@ -13,9 +13,7 @@
       }
       
       preload() {
-        // Load the door images and background.
-        this.load.image('closeDoor', 'assets/closeDoor.png');
-        this.load.image('openDoor', 'assets/openDoor.png');
+        // Load the background.
         this.load.image('room', 'assets/brick.png');
       }
       
@@ -24,12 +22,12 @@
         this.credentialsCorrect = false;
         this.doorIsOpen = false;
         
-        // Create the background and set its depth to -1.
+        // Create the background.
         this.background = this.add.image(0, 0, 'room');
         this.background.setDepth(-1);
         
         // ----- Create Dynamic Textures -----
-        // Monitor texture: base size 100x70.
+        // Monitor texture.
         const monitorGraphics = this.add.graphics();
         monitorGraphics.fillStyle(0x808080, 1);
         monitorGraphics.fillRect(0, 0, 100, 70);
@@ -38,7 +36,7 @@
         monitorGraphics.generateTexture('monitorTexture', 100, 70);
         monitorGraphics.destroy();
         
-        // Trash bin texture: base size 60x80.
+        // Trash bin texture.
         const trashGraphics = this.add.graphics();
         trashGraphics.fillStyle(0x303030, 1);
         trashGraphics.fillRect(0, 0, 60, 80);
@@ -47,7 +45,7 @@
         trashGraphics.generateTexture('trashTexture', 60, 80);
         trashGraphics.destroy();
         
-        // Chair texture: base size 80x120.
+        // Chair texture.
         const chairGraphics = this.add.graphics();
         chairGraphics.fillStyle(0xA0522D, 1);
         chairGraphics.fillRect(0, 0, 80, 40);
@@ -55,7 +53,7 @@
         chairGraphics.generateTexture('chairTexture', 80, 120);
         chairGraphics.destroy();
         
-        // Table texture: base size 300x50.
+        // Table texture.
         const tableGraphics = this.add.graphics();
         tableGraphics.fillStyle(0x8B4513, 1);
         tableGraphics.fillRect(0, 0, 300, 20);
@@ -64,12 +62,37 @@
         tableGraphics.generateTexture('tableTexture', 300, 50);
         tableGraphics.destroy();
         
+        // Custom Door Textures:
+        // Closed door: 200×392 with dark fill and knob on the right.
+        const doorClosedGraphics = this.add.graphics();
+        doorClosedGraphics.fillStyle(0x8B4513, 1);
+        doorClosedGraphics.fillRect(0, 0, 200, 392);
+        doorClosedGraphics.fillStyle(0x000000, 1);
+        // Draw door knob on the right, roughly centered vertically.
+        doorClosedGraphics.fillCircle(180, 196, 10);
+        doorClosedGraphics.generateTexture('doorClosed', 200, 392);
+        doorClosedGraphics.destroy();
+        
+        // Open door: 200×392 with a light fill, a thick black vertical line on the left,
+        // and a door knob on the left.
+        const doorOpenGraphics = this.add.graphics();
+        doorOpenGraphics.fillStyle(0xcccccc, 1);
+        doorOpenGraphics.fillRect(0, 0, 200, 392);
+        // Draw a thick black vertical line on the left side.
+        doorOpenGraphics.lineStyle(10, 0x000000, 2);
+        doorOpenGraphics.strokeLineShape(new Phaser.Geom.Line(10, 0, 10, 392));
+        // Draw a door knob on the left side.
+        doorOpenGraphics.fillStyle(0x000000, 1);
+        doorOpenGraphics.fillCircle(20, 196, 10);
+        doorOpenGraphics.generateTexture('doorOpen', 200, 392);
+        doorOpenGraphics.destroy();
+        
         // ----- Create Scene Elements -----
         // Table.
         this.table = this.add.image(0, 0, 'tableTexture');
         this.table.setDepth(2);
         
-        // Create three monitors.
+        // Monitors.
         this.monitors = [];
         for (let i = 0; i < 3; i++) {
           let monitor = this.add.image(0, 0, 'monitorTexture').setInteractive();
@@ -82,17 +105,18 @@
         }
         
         // Door.
-        this.door = this.add.image(0, 0, 'closeDoor').setInteractive();
+        this.door = this.add.image(0, 0, 'doorClosed').setInteractive();
         this.door.setDepth(3);
-        // Set door origin to (0.5, 1) so its y-position is at its bottom edge.
+        // Set origin to (0.5, 1) so that the door's y position is its bottom edge.
         this.door.setOrigin(0.5, 1);
         this.door.name = "Door";
+        // Force display size to 200×392.
+        this.door.setDisplaySize(200, 392);
         this.door.on('pointerdown', () => {
           if (this.credentialsCorrect) {
             if (!this.doorIsOpen) {
-              this.door.setTexture('openDoor');
-              // Force the display size again after changing texture.
-              this.door.setDisplaySize(270, 400);
+              this.door.setTexture('doorOpen');
+              this.door.setDisplaySize(200, 392);
               this.doorIsOpen = true;
               this.showMessage("Door opened! Move on...");
             } else {
@@ -115,14 +139,17 @@
           this.showHint("Username: user\nPassword: pass");
         });
         
-        // Floor: a rectangle that covers the entire bottom.
+        // Floor.
         this.floor = this.add.rectangle(0, 0, 100, 50, 0x654321).setOrigin(0.5, 0);
         this.floor.setDepth(0);
         
         // Message text.
-        this.messageText = this.add.text(20, 20, "Click a monitor, door, or trash bin.", { font: "20px Arial", fill: "#ffffff" });
+        this.messageText = this.add.text(20, 20, "Click a monitor, door, or trash bin.", {
+          font: "20px Arial",
+          fill: "#ffffff"
+        });
         
-        // Hint text (sticky note style), hidden initially.
+        // Hint text.
         this.hintText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height * 0.2, "", {
           font: "20px Arial",
           fill: "#000000",
@@ -132,7 +159,7 @@
         this.hintText.setOrigin(0.5);
         this.hintText.setVisible(false);
         
-        // Update layout on creation and on window resize.
+        // Update layout.
         this.updateLayout();
         this.scale.on('resize', this.updateLayout, this);
       }
@@ -176,12 +203,10 @@
         let trashScale = (gameWidth * 0.05) / 60;
         this.trashBin.setScale(trashScale);
         
-        // For the door, force a fixed display size of 170x300.
-        const doorDisplayWidth = 170;
-        const doorDisplayHeight = 300;
-        this.door.setDisplaySize(doorDisplayWidth, doorDisplayHeight);
+        // The door is custom drawn at 200x392 so we keep that fixed.
+        this.door.setDisplaySize(200, 392);
         if (!this.doorIsOpen) {
-          this.door.setTexture('closeDoor');
+          this.door.setTexture('doorClosed');
         }
         
         // --- Position Elements ---
@@ -191,7 +216,8 @@
         this.table.setPosition(tableX, tableY);
         let tableDisplayWidth = this.table.displayWidth;
         let tableDisplayHeight = this.table.displayHeight;
-        let tableBottomY = tableY + tableDisplayHeight / 2;
+        let tableBounds = this.table.getBounds();
+        let tableBottomY = tableBounds.bottom;
         
         // Monitors: position so their bottom edges sit on the top of the table.
         let monitorHeight = 70 * monitorScale;
@@ -204,13 +230,11 @@
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
         
-        // Door: position it so that its bottom aligns with the top of the floor.
-        // The floor's top edge is at tableBottomY.
-        let doorMargin = 70;  // Shift door further right.
-        let doorX = gameWidth - doorDisplayWidth/2 - doorMargin;
-        // Since door origin is (0.5,1), set door.y equal to tableBottomY so its bottom aligns.
-        let doorY = tableBottomY + 18;
-        this.door.setPosition(doorX, doorY);
+        // Door: align its bottom with the table's bottom.
+        let doorMargin = 70;
+        let doorX = gameWidth - 100 - doorMargin;
+        // With door origin (0.5,1), setting door.y = tableBottomY aligns its bottom.
+        this.door.setPosition(doorX, tableBottomY);
         
         // Chair: center on the table.
         let chairX = tableX;
@@ -223,12 +247,12 @@
         let trashX = chairX + (150 * (gameWidth / 1024));
         this.trashBin.setPosition(trashX, trashY);
         
-        // Floor: cover the entire bottom from the table's bottom to the bottom of the game.
+        // Floor: cover the entire bottom from tableBottomY to game bottom.
         let floorHeight = gameHeight - tableBottomY;
         this.floor.setSize(gameWidth, floorHeight);
         this.floor.setPosition(gameWidth / 2, tableBottomY);
         
-        // Update positions for hint text and message text.
+        // Update hint and message text positions.
         this.hintText.setPosition(gameWidth / 2, gameHeight * 0.2);
         this.messageText.setPosition(20, 20);
       }
