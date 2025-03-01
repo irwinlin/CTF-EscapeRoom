@@ -172,12 +172,10 @@
         let trashScale = (gameWidth * 0.05) / 60;
         this.trashBin.setScale(trashScale);
         
-        // For the door, we force a display size so both closed and open textures are identical.
-        // We'll use 20% of the game width for the door's width.
+        // For the door, force a display size so both closed and open textures are identical.
         let doorDisplayWidth = gameWidth * 0.2;
-        // Assuming a 3:1 aspect ratio (as our previous dynamic door was 300x100),
-        // set doorDisplayHeight = doorDisplayWidth / 3.
-        let doorDisplayHeight = doorDisplayWidth / 3;
+        // Change the aspect ratio: now the door is taller.
+        let doorDisplayHeight = doorDisplayWidth * 1.5;  
         this.door.setDisplaySize(doorDisplayWidth, doorDisplayHeight);
         if (!this.doorIsOpen) {
           this.door.setTexture('closeDoor');
@@ -203,8 +201,8 @@
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
         
-        // Door: align its bottom with the table's bottom, and shift it a bit further to the right.
-        let doorMargin = 70;  // Increased margin moves door further right.
+        // Door: align its bottom with the table's bottom and shift it further to the right.
+        let doorMargin = 70;
         let doorX = gameWidth - doorDisplayWidth/2 - doorMargin;
         let doorY = tableBottomY - doorDisplayHeight/2;
         this.door.setPosition(doorX, doorY);
@@ -220,10 +218,9 @@
         let trashX = chairX + (150 * (gameWidth / 1024));
         this.trashBin.setPosition(trashX, trashY);
         
-        // Floor: cover the entire bottom from the table bottom to the bottom of the game.
+        // Floor: cover the entire bottom from the table's bottom to the bottom of the game.
         let floorHeight = gameHeight - tableBottomY;
         this.floor.setSize(gameWidth, floorHeight);
-        // Position the floor so its top edge is at tableBottomY.
         this.floor.setPosition(gameWidth / 2, tableBottomY);
         
         // Update positions for hint text and message text.
