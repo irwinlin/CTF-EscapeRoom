@@ -81,7 +81,7 @@
           this.monitors.push(monitor);
         }
         
-        // Door: start with the closed door texture.
+        // Door: start with the closed door image.
         this.door = this.add.image(0, 0, 'closeDoor').setInteractive();
         this.door.setDepth(3);
         this.door.name = "Door";
@@ -128,7 +128,7 @@
         this.hintText.setOrigin(0.5);
         this.hintText.setVisible(false);
         
-        // Update layout on creation and on window resize.
+        // Update layout initially and on window resize.
         this.updateLayout();
         this.scale.on('resize', this.updateLayout, this);
       }
@@ -172,10 +172,9 @@
         let trashScale = (gameWidth * 0.05) / 60;
         this.trashBin.setScale(trashScale);
         
-        // For the door, force a display size so both closed and open textures are identical.
-        let doorDisplayWidth = gameWidth * 0.2;
-        // Change the aspect ratio: now the door is taller.
-        let doorDisplayHeight = doorDisplayWidth * 1.5;  
+        // For the door, force a display size of 170x300.
+        const doorDisplayWidth = 170;
+        const doorDisplayHeight = 300;
         this.door.setDisplaySize(doorDisplayWidth, doorDisplayHeight);
         if (!this.doorIsOpen) {
           this.door.setTexture('closeDoor');
@@ -201,10 +200,12 @@
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
         
-        // Door: align its bottom with the table's bottom and shift it further to the right.
-        let doorMargin = 70;
+        // Door: position it so that its top aligns with the top of the floor.
+        // The floor's top is at the table's bottom.
+        let doorMargin = 70;  // Increase margin to shift door further right.
         let doorX = gameWidth - doorDisplayWidth/2 - doorMargin;
-        let doorY = tableBottomY - doorDisplayHeight/2;
+        // Align door top with tableBottomY: door center y = tableBottomY + doorDisplayHeight/2.
+        let doorY = tableBottomY + doorDisplayHeight/2;
         this.door.setPosition(doorX, doorY);
         
         // Chair: center on the table.
