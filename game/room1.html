@@ -81,17 +81,17 @@
           this.monitors.push(monitor);
         }
         
-        // Door: start with the closed door texture.
+        // Door.
         this.door = this.add.image(0, 0, 'closeDoor').setInteractive();
         this.door.setDepth(3);
-        // Set door origin to (0.5,1) so that its y position represents its bottom edge.
+        // Set door origin to (0.5, 1) so its y-position is at its bottom edge.
         this.door.setOrigin(0.5, 1);
         this.door.name = "Door";
         this.door.on('pointerdown', () => {
           if (this.credentialsCorrect) {
             if (!this.doorIsOpen) {
               this.door.setTexture('openDoor');
-              // Reapply fixed display size to maintain consistent dimensions.
+              // Force the display size again after changing texture.
               this.door.setDisplaySize(170, 300);
               this.doorIsOpen = true;
               this.showMessage("Door opened! Move on...");
@@ -204,10 +204,11 @@
         this.monitors[1].setPosition(monitorCenterX, monitorY);
         this.monitors[2].setPosition(monitorRightX, monitorY);
         
-        // Door: align its bottom with the table's bottom (the top of the floor).
+        // Door: position it so that its bottom aligns with the top of the floor.
+        // The floor's top edge is at tableBottomY.
         let doorMargin = 70;  // Shift door further right.
         let doorX = gameWidth - doorDisplayWidth/2 - doorMargin;
-        // With door origin (0.5,1), setting door.y to tableBottomY makes its bottom flush with tableBottomY.
+        // Since door origin is (0.5,1), set door.y equal to tableBottomY so its bottom aligns.
         let doorY = tableBottomY;
         this.door.setPosition(doorX, doorY);
         
