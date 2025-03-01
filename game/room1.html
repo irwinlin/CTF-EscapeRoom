@@ -92,7 +92,7 @@
             if (!this.doorIsOpen) {
               this.door.setTexture('openDoor');
               // Force the display size again after changing texture.
-              this.door.setDisplaySize(170, 300);
+              this.door.setDisplaySize(270, 400);
               this.doorIsOpen = true;
               this.showMessage("Door opened! Move on...");
             } else {
@@ -209,7 +209,7 @@
         let doorMargin = 70;  // Shift door further right.
         let doorX = gameWidth - doorDisplayWidth/2 - doorMargin;
         // Since door origin is (0.5,1), set door.y equal to tableBottomY so its bottom aligns.
-        let doorY = tableBottomY;
+        let doorY = tableBottomY + 18;
         this.door.setPosition(doorX, doorY);
         
         // Chair: center on the table.
