@@ -102,7 +102,7 @@ class FlickerBackgroundScene extends Phaser.Scene {
       }
     });
     
-    // Hint 2 button, moved further down (y = 120).
+    // Hint 2 button
     this.hint2Button = this.add.text(this.cameras.main.width - 20, 120, "Hint 2", {
       font: "18px Arial",
       fill: "#ffff00"
@@ -115,7 +115,7 @@ class FlickerBackgroundScene extends Phaser.Scene {
       this.extraInstructions.setVisible(!this.extraInstructions.visible);
     });
     
-    // Extra instructions text that clarifies what each interactive element does, moved further down (y = 160).
+    // Extra instructions text that clarifies what each interactive element does
     this.extraInstructions = this.add.text(this.cameras.main.width - 20, 160, 
       "Left/Middle/Right Desk Monitors: View feeds\n" +
       "Wall Monitors: Display info\n" +
