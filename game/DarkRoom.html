@@ -40,7 +40,7 @@ class FlickerBackgroundScene extends Phaser.Scene {
     this.scheduleFlicker();
     
     // Define interactive areas using normalized coordinates.
-    // The coordinates are in [x_min, y_min, x_max, y_max] format, where values are fractions of the screen dimensions.
+    // Format: [x_min, y_min, x_max, y_max] (values as fractions of screen dimensions).
     this.interactiveAreas = [
       { id: "leftDeskMonitor", coords: [0.27, 0.53, 0.36, 0.65] },
       { id: "middleDeskMonitor", coords: [0.39, 0.53, 0.49, 0.65] },
@@ -66,6 +66,88 @@ class FlickerBackgroundScene extends Phaser.Scene {
       this.interactiveBoxes.push({ id: area.id, box: box, coords: area.coords });
     });
     
+    // Level counter (bottom left)
+    this.levelCounter = this.add.text(20, this.cameras.main.height - 20, "Level 1", {
+      font: "20px Arial",
+      fill: "#ffffff"
+    });
+    this.levelCounter.setOrigin(0, 1);
+    this.levelCounter.setDepth(3);
+    
+    // Instructions text (top right) listing what is clickable.
+    this.instructions = this.add.text(this.cameras.main.width - 20, 40, "Monitors\nTrash Can\nDoor\nKeypad", {
+      font: "18px Arial",
+      fill: "#ffffff",
+      align: "right"
+    });
+    this.instructions.setOrigin(1, 0);
+    this.instructions.setDepth(3);
+    this.instructions.setVisible(false);
+    
+    // Hint button to toggle instructions, positioned at the top right.
+    this.hintButton = this.add.text(this.cameras.main.width - 20, 10, "Hint", {
+      font: "18px Arial",
+      fill: "#ffff00"
+    });
+    this.hintButton.setOrigin(1, 0);
+    this.hintButton.setDepth(5);
+    this.hintButton.setInteractive({ useHandCursor: true });
+    this.hintButton.on("pointerdown", () => {
+      this.instructions.setVisible(!this.instructions.visible);
+      if (this.instructions.visible) {
+        this.hint2Button.setVisible(true);
+      } else {
+        this.hint2Button.setVisible(false);
+        this.extraInstructions.setVisible(false);
+      }
+    });
+    
+    // Hint 2 button, moved further down (y = 120).
+    this.hint2Button = this.add.text(this.cameras.main.width - 20, 120, "Hint 2", {
+      font: "18px Arial",
+      fill: "#ffff00"
+    });
+    this.hint2Button.setOrigin(1, 0);
+    this.hint2Button.setDepth(5);
+    this.hint2Button.setInteractive({ useHandCursor: true });
+    this.hint2Button.setVisible(false);
+    this.hint2Button.on("pointerdown", () => {
+      this.extraInstructions.setVisible(!this.extraInstructions.visible);
+    });
+    
+    // Extra instructions text that clarifies what each interactive element does, moved further down (y = 160).
+    this.extraInstructions = this.add.text(this.cameras.main.width - 20, 160, 
+      "Left/Middle/Right Desk Monitors: View feeds\n" +
+      "Wall Monitors: Display info\n" +
+      "Door: Enter password to exit\n" +
+      "Keypad: Input password\n" +
+      "Garbage Can: Reveal sticky note", 
+      {
+        font: "16px Arial",
+        fill: "#ffffff",
+        align: "right"
+      }
+    );
+    this.extraInstructions.setOrigin(1, 0);
+    this.extraInstructions.setDepth(5);
+    this.extraInstructions.setVisible(false);
+    
+    // Sticky note for the garbage can (hidden initially).
+    this.stickyNote = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2, 
+      "Username: user\nPassword: secret", {
+      font: "24px Arial",
+      fill: "#000000",
+      backgroundColor: "#ffff88",
+      padding: { x: 20, y: 20 },
+      align: "center"
+    });
+    this.stickyNote.setOrigin(0.5);
+    this.stickyNote.setVisible(false);
+    this.stickyNote.setInteractive({ useHandCursor: true });
+    this.stickyNote.on("pointerdown", () => {
+      this.stickyNote.setVisible(false);
+    });
+    
     // Handle window resize.
     this.scale.on('resize', this.resize, this);
   }
@@ -87,12 +169,12 @@ class FlickerBackgroundScene extends Phaser.Scene {
   }
   
   areaClicked(id) {
-    // For demonstration, log the clicked area.
     console.log("Clicked area:", id);
-    // Here you can add specific interactions based on the area:
-    // - If id === "garbageCan": show a large sticky note with credentials.
-    // - If id contains "Monitor": prompt for username.
-    // - If id === "door" or "doorKeypad": prompt for password.
+    // Specific interactions based on area id:
+    if (id === "garbageCan") {
+      this.stickyNote.setVisible(true);
+    }
+    // Additional interactions for monitors and door can be added here.
   }
   
   resize(gameSize) {
@@ -111,11 +193,23 @@ class FlickerBackgroundScene extends Phaser.Scene {
       const [x_min, y_min, x_max, y_max] = item.coords;
       let boxWidth = (x_max - x_min) * width;
       let boxHeight = (y_max - y_min) * height;
-      let x = x_min * width + boxWidth/2;
-      let y = y_min * height + boxHeight/2;
+      let x = x_min * width + boxWidth / 2;
+      let y = y_min * height + boxHeight / 2;
       item.box.setPosition(x, y);
       item.box.setSize(boxWidth, boxHeight);
     });
+    
+    // Update level counter (bottom left)
+    this.levelCounter.setPosition(20, height - 20);
+    
+    // Update hint button (top right) and hint2 button and instructions.
+    this.hintButton.setPosition(width - 20, 10);
+    this.hint2Button.setPosition(width - 20, 120);
+    this.instructions.setPosition(width - 20, 40);
+    this.extraInstructions.setPosition(width - 20, 160);
+    
+    // Reposition sticky note (center).
+    this.stickyNote.setPosition(width / 2, height / 2);
   }
 }
 
