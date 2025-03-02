@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CTF Escape Game - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { margin: 0; background-color: black; font-family: Arial, sans-serif; color: white; }
+        #login-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        input, button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+        a {
+            color: cyan;
+            text-decoration: none;
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-container">
+        <h1>CTF Escape Game</h1>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p id="error-message" style="color: red;"></p>
+        <a href="register.html">Create an Account</a>
+        <a href="forgot-password.html">Forgot Password?</a>
+    </div>
+
+    <script>
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const errorMessage = document.getElementById("error-message");
+
+            // Send the data with the raw password (bcrypt hashing happens on the server)
+            axios.post("http://localhost:8000/login", { username, password })
+                .then(response => {
+                    alert("Login Successful! Level: " + response.data.level);
+                    localStorage.setItem('loggedIn', 'true');
+                    window.location.href = "room1.html";
+                })
+                .catch(error => {
+                    errorMessage.textContent = error.response?.data?.error || "Login failed.";
+                });
+        }
+    </script>
+</body>
+</html>
