@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Animated Security Room</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <style>
+    body { margin: 0; }
+  </style>
 </head>
 <body>
 <script>
@@ -13,75 +16,106 @@ class FlickerBackgroundScene extends Phaser.Scene {
   }
 
   preload() {
-    // Replace these paths with the actual paths to your two background images.
+    // Load your two background images.
+    // Update these paths to match your asset locations.
     this.load.image("darkRoom", "assets/DarkRoom1.png");
     this.load.image("lightRoom", "assets/LightRoom1.png");
   }
 
   create() {
-    // Create two images at the center; we'll toggle their visibility/alpha.
-    // The 'darkRoom' image is the default, 'lightRoom' flickers in occasionally.
+    // Create two full-screen background images.
     this.bgDark = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, "darkRoom");
     this.bgDark.setOrigin(0.5);
+    this.bgDark.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
     
     this.bgLight = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, "lightRoom");
     this.bgLight.setOrigin(0.5);
-    
-    // Start them both scaled to fill the screen.
-    this.bgDark.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
     this.bgLight.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
     
-    // The dark background is visible; the light one is hidden at first.
+    // Start with dark visible.
     this.bgDark.setAlpha(1);
     this.bgLight.setAlpha(0);
     
-    // Kick off the flicker loop.
+    // Begin flicker loop.
     this.scheduleFlicker();
     
-    // Handle resizing so images fill the screen.
+    // Define interactive areas using normalized coordinates.
+    // The coordinates are in [x_min, y_min, x_max, y_max] format, where values are fractions of the screen dimensions.
+    this.interactiveAreas = [
+      { id: "leftDeskMonitor", coords: [0.27, 0.53, 0.36, 0.65] },
+      { id: "middleDeskMonitor", coords: [0.39, 0.53, 0.49, 0.65] },
+      { id: "rightDeskMonitor", coords: [0.51, 0.53, 0.61, 0.65] },
+      { id: "leftTopMonitor", coords: [0.26, 0.3, 0.41, 0.5] },
+      { id: "rightTopMonitor", coords: [0.42, 0.3, 0.58, 0.5] },
+      { id: "door", coords: [0.63, 0.42, 0.75, 0.83] },
+      { id: "doorKeypad", coords: [0.63, 0.66, 0.65, 0.6] },
+      { id: "garbageCan", coords: [0.15, 0.85, 0.2, 0.95] }
+    ];
+    
+    // Create interactive white boxes for each area.
+    // These boxes are semi-transparent white rectangles.
+    this.interactiveBoxes = [];
+    this.interactiveAreas.forEach(area => {
+      let box = this.add.rectangle(0, 0, 10, 10, 0xffffff, 0.4);
+      box.setOrigin(0.5);
+      box.setInteractive();
+      box.name = area.id;
+      box.on("pointerdown", () => {
+        this.areaClicked(area.id);
+      });
+      this.interactiveBoxes.push({ id: area.id, box: box, coords: area.coords });
+    });
+    
+    // Handle window resize.
     this.scale.on('resize', this.resize, this);
   }
-
-  // Schedules the next flicker at a random time.
+  
   scheduleFlicker() {
-    // Random time (e.g., 1–3 seconds) until the next flicker starts.
     let delay = Phaser.Math.Between(1000, 3000);
-    this.time.delayedCall(delay, () => {
-      this.startFlicker();
-    });
+    this.time.delayedCall(delay, () => { this.startFlicker(); });
   }
-
-  // Start the flicker: show the light background for a brief random moment, then hide it again.
+  
   startFlicker() {
-    // Flicker “on” time (e.g., 100–500 ms).
     let flickerDuration = Phaser.Math.Between(100, 500);
-    
-    // Show the light background.
     this.bgLight.setAlpha(1);
     this.bgDark.setAlpha(0);
-    
-    // After flickerDuration, revert to dark background, schedule next flicker.
     this.time.delayedCall(flickerDuration, () => {
       this.bgLight.setAlpha(0);
       this.bgDark.setAlpha(1);
-      // Schedule the next flicker again.
       this.scheduleFlicker();
     });
   }
-
-  // Called whenever the game resizes.
+  
+  areaClicked(id) {
+    // For demonstration, log the clicked area.
+    console.log("Clicked area:", id);
+    // Here you can add specific interactions based on the area:
+    // - If id === "garbageCan": show a large sticky note with credentials.
+    // - If id contains "Monitor": prompt for username.
+    // - If id === "door" or "doorKeypad": prompt for password.
+  }
+  
   resize(gameSize) {
     const width = gameSize.width;
     const height = gameSize.height;
-
     this.cameras.resize(width, height);
-
-    // Re-center and re-scale the images.
+    
+    // Resize and reposition backgrounds.
     this.bgDark.setPosition(width / 2, height / 2);
     this.bgDark.setDisplaySize(width, height);
-
     this.bgLight.setPosition(width / 2, height / 2);
     this.bgLight.setDisplaySize(width, height);
+    
+    // Recalculate positions/sizes for interactive boxes.
+    this.interactiveBoxes.forEach(item => {
+      const [x_min, y_min, x_max, y_max] = item.coords;
+      let boxWidth = (x_max - x_min) * width;
+      let boxHeight = (y_max - y_min) * height;
+      let x = x_min * width + boxWidth/2;
+      let y = y_min * height + boxHeight/2;
+      item.box.setPosition(x, y);
+      item.box.setSize(boxWidth, boxHeight);
+    });
   }
 }
 
