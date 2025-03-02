@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CTF Escape Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            text-align: center;
+        }
+        #game-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #start-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        #start-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>CTF Escape Game</h1>
+        <button id="start-button">Start Game</button>
+    </div>
+
+    <script>
+        document.getElementById("start-button").addEventListener("click", function() {
+            window.location.href = "login.html"; // Go to the first game room
+        });
+    </script>
+</body>
+</html>
