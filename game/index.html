@@ -16,33 +16,35 @@
       }
       
       preload() {
-        // You can preload assets (such as a background image or logo) here.
+        // If you have a title screen image or logo, load it here.
       }
       
       create() {
         let gameWidth = this.cameras.main.width;
         let gameHeight = this.cameras.main.height;
         
-        // Set a background color (or you can add an image)
+        // Simple background color for the title screen.
         this.cameras.main.setBackgroundColor('#000000');
         
-        // Add the title text.
+        // Add the main title text.
         let titleText = this.add.text(gameWidth / 2, gameHeight / 2 - 100, "CTF Escape Game", {
           font: "48px Arial",
           fill: "#ffffff"
         });
         titleText.setOrigin(0.5);
         
-        // Add a start button as text.
+        // Add a 'Start' button as text.
         let startText = this.add.text(gameWidth / 2, gameHeight / 2 + 50, "Click to Start", {
           font: "32px Arial",
           fill: "#ffffff"
         });
         startText.setOrigin(0.5);
         startText.setInteractive({ useHandCursor: true });
+        
+        // When clicked, navigate to the new dark background room page.
+        // Replace "DarkRoom.html" with the actual file name if different.
         startText.on("pointerdown", () => {
-          // When clicked, navigate to room1.html (your game room).
-          window.location.href = "room1.html";
+          window.location.href = "DarkRoom.html";
         });
       }
     }

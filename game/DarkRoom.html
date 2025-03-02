@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>New Animated Security Room</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+<body>
+<script>
+class FlickerBackgroundScene extends Phaser.Scene {
+  constructor() {
+    super("FlickerBackgroundScene");
+  }
+
+  preload() {
+    // Replace these paths with the actual paths to your two background images.
+    this.load.image("darkRoom", "assets/DarkRoom1.png");
+    this.load.image("lightRoom", "assets/LightRoom1.png");
+  }
+
+  create() {
+    // Create two images at the center; we'll toggle their visibility/alpha.
+    // The 'darkRoom' image is the default, 'lightRoom' flickers in occasionally.
+    this.bgDark = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, "darkRoom");
+    this.bgDark.setOrigin(0.5);
+    
+    this.bgLight = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, "lightRoom");
+    this.bgLight.setOrigin(0.5);
+    
+    // Start them both scaled to fill the screen.
+    this.bgDark.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+    this.bgLight.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+    
+    // The dark background is visible; the light one is hidden at first.
+    this.bgDark.setAlpha(1);
+    this.bgLight.setAlpha(0);
+    
+    // Kick off the flicker loop.
+    this.scheduleFlicker();
+    
+    // Handle resizing so images fill the screen.
+    this.scale.on('resize', this.resize, this);
+  }
+
+  // Schedules the next flicker at a random time.
+  scheduleFlicker() {
+    // Random time (e.g., 1–3 seconds) until the next flicker starts.
+    let delay = Phaser.Math.Between(1000, 3000);
+    this.time.delayedCall(delay, () => {
+      this.startFlicker();
+    });
+  }
+
+  // Start the flicker: show the light background for a brief random moment, then hide it again.
+  startFlicker() {
+    // Flicker “on” time (e.g., 100–500 ms).
+    let flickerDuration = Phaser.Math.Between(100, 500);
+    
+    // Show the light background.
+    this.bgLight.setAlpha(1);
+    this.bgDark.setAlpha(0);
+    
+    // After flickerDuration, revert to dark background, schedule next flicker.
+    this.time.delayedCall(flickerDuration, () => {
+      this.bgLight.setAlpha(0);
+      this.bgDark.setAlpha(1);
+      // Schedule the next flicker again.
+      this.scheduleFlicker();
+    });
+  }
+
+  // Called whenever the game resizes.
+  resize(gameSize) {
+    const width = gameSize.width;
+    const height = gameSize.height;
+
+    this.cameras.resize(width, height);
+
+    // Re-center and re-scale the images.
+    this.bgDark.setPosition(width / 2, height / 2);
+    this.bgDark.setDisplaySize(width, height);
+
+    this.bgLight.setPosition(width / 2, height / 2);
+    this.bgLight.setDisplaySize(width, height);
+  }
+}
+
+const config = {
+  type: Phaser.AUTO,
+  width: window.innerWidth,
+  height: window.innerHeight,
+  scene: [FlickerBackgroundScene],
+  scale: {
+    mode: Phaser.Scale.RESIZE,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  }
+};
+
+const game = new Phaser.Game(config);
+</script>
+</body>
+</html>
