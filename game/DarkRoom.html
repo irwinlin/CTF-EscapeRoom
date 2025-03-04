@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Animated Security Room</title>
-  <!-- Google Font for the handwritten look -->
   <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
   <style>
@@ -18,33 +17,33 @@ class FlickerBackgroundScene extends Phaser.Scene {
   }
 
   preload() {
-    // Load your background images and keypad image.
+    // Load your background images and the keypad image.
     this.load.image("darkRoom", "assets/DarkRoom1.png");
-    this.load.image("lightRoom", "assets/LightRoom1.png");
-    this.load.image("keypad",   "assets/kaypad.png");  // Adjust path/filename if needed
+    this.load.image("lightRoom", "assets/lightRoom1.png");
+    this.load.image("keypad",   "assets/kaypad.png");  // Ensure the filename/path is correct.
   }
 
   create() {
-    // Track door unlock status.
+    // Flag to track if the door is unlocked.
     this.doorUnlocked = false;
-
+    
     // Create two full-screen background images.
-    this.bgDark = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, "darkRoom")
-      .setOrigin(0.5)
-      .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-
-    this.bgLight = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, "lightRoom")
-      .setOrigin(0.5)
-      .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-
-    // Dark visible, light invisible initially.
+    this.bgDark = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, "darkRoom");
+    this.bgDark.setOrigin(0.5);
+    this.bgDark.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+    
+    this.bgLight = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, "lightRoom");
+    this.bgLight.setOrigin(0.5);
+    this.bgLight.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+    
+    // Start with dark visible, light invisible.
     this.bgDark.setAlpha(1);
     this.bgLight.setAlpha(0);
-
-    // Start flicker loop.
+    
+    // Begin flicker loop.
     this.scheduleFlicker();
-
-    // Define interactive areas.
+    
+    // Define interactive areas using normalized coordinates.
     this.interactiveAreas = [
       { id: "leftDeskMonitor", coords: [0.27, 0.53, 0.36, 0.65] },
       { id: "middleDeskMonitor", coords: [0.39, 0.53, 0.49, 0.65] },
@@ -55,48 +54,57 @@ class FlickerBackgroundScene extends Phaser.Scene {
       { id: "doorKeypad", coords: [0.63, 0.60, 0.65, 0.66] },
       { id: "garbageCan", coords: [0.15, 0.85, 0.2, 0.95] }
     ];
-
+    
     // Create interactive boxes for each area.
     this.interactiveBoxes = [];
     this.interactiveAreas.forEach(area => {
-      // For garbageCan & door, make the box invisible (alpha=0).
+      // For garbageCan, door, and doorKeypad, set their box alpha to 0 (invisible).
       let alpha = 0.4;
-      if (area.id === "garbageCan" || area.id === "door") {
+      if (area.id === "garbageCan" || area.id === "door" || area.id === "doorKeypad") {
         alpha = 0;
       }
-      let box = this.add.rectangle(0, 0, 10, 10, 0xffffff, alpha)
-        .setOrigin(0.5)
-        .setInteractive()
-        .setName(area.id);
-      // For doorKeypad, ensure it's above the door.
+      let box = this.add.rectangle(0, 0, 10, 10, 0xffffff, alpha);
+      box.setOrigin(0.5);
+      box.setInteractive();
+      box.name = area.id;
+      // For doorKeypad, raise its depth.
       if (area.id === "doorKeypad") {
         box.setDepth(10);
       } else if (area.id === "door") {
         box.setDepth(1);
       }
-      // On pointerdown, call areaClicked with the area id.
-      box.on("pointerdown", () => this.areaClicked(area.id));
+      box.on("pointerdown", () => {
+        this.areaClicked(area.id);
+      });
       this.interactiveBoxes.push({ id: area.id, box: box, coords: area.coords });
     });
-
+    
     // Level counter (bottom left).
     this.levelCounter = this.add.text(20, this.cameras.main.height - 20, "Level 1", {
       font: "20px 'Indie Flower'",
       fill: "#ffffff"
-    }).setOrigin(0, 1).setDepth(3);
-
+    });
+    this.levelCounter.setOrigin(0, 1);
+    this.levelCounter.setDepth(3);
+    
     // Instructions text (top right).
     this.instructions = this.add.text(this.cameras.main.width - 20, 40, "Monitors\nTrash Can\nDoor\nKeypad", {
       font: "18px 'Indie Flower'",
       fill: "#ffffff",
       align: "right"
-    }).setOrigin(1, 0).setDepth(3).setVisible(false);
-
+    });
+    this.instructions.setOrigin(1, 0);
+    this.instructions.setDepth(3);
+    this.instructions.setVisible(false);
+    
     // Hint button (top right).
     this.hintButton = this.add.text(this.cameras.main.width - 20, 10, "Hint", {
       font: "18px 'Indie Flower'",
       fill: "#ffff00"
-    }).setOrigin(1, 0).setDepth(5).setInteractive({ useHandCursor: true });
+    });
+    this.hintButton.setOrigin(1, 0);
+    this.hintButton.setDepth(5);
+    this.hintButton.setInteractive({ useHandCursor: true });
     this.hintButton.on("pointerdown", () => {
       this.instructions.setVisible(!this.instructions.visible);
       if (this.instructions.visible) {
@@ -106,18 +114,22 @@ class FlickerBackgroundScene extends Phaser.Scene {
         this.extraInstructions.setVisible(false);
       }
     });
-
-    // Hint 2 button, at y=140, hidden initially.
+    
+    // Hint 2 button, positioned at y = 140, hidden initially.
     this.hint2Button = this.add.text(this.cameras.main.width - 20, 140, "Hint 2", {
       font: "18px 'Indie Flower'",
       fill: "#ffff00"
-    }).setOrigin(1, 0).setDepth(5).setInteractive({ useHandCursor: true }).setVisible(false);
+    });
+    this.hint2Button.setOrigin(1, 0);
+    this.hint2Button.setDepth(5);
+    this.hint2Button.setInteractive({ useHandCursor: true });
+    this.hint2Button.setVisible(false);
     this.hint2Button.on("pointerdown", () => {
       this.extraInstructions.setVisible(!this.extraInstructions.visible);
     });
-
-    // Extra instructions text, at y=180, hidden initially.
-    this.extraInstructions = this.add.text(this.cameras.main.width - 20, 180,
+    
+    // Extra instructions text, positioned at y = 180.
+    this.extraInstructions = this.add.text(this.cameras.main.width - 20, 180, 
       "Left/Middle/Right Desk Monitors: View feeds\n" +
       "Wall Monitors: Display info\n" +
       "Door: Click for message\n" +
@@ -127,15 +139,20 @@ class FlickerBackgroundScene extends Phaser.Scene {
         fill: "#ffffff",
         align: "right"
       }
-    ).setOrigin(1, 0).setDepth(5).setVisible(false);
-
-    // A dark overlay for the sticky note.
-    this.overlay = this.add.rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2,
-      this.cameras.main.width, this.cameras.main.height, 0x000000, 0.5)
-      .setOrigin(0.5).setDepth(2).setVisible(false);
-
-    // Sticky note for the garbage can, 300x300.
-    this.stickyNote = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2,
+    );
+    this.extraInstructions.setOrigin(1, 0);
+    this.extraInstructions.setDepth(5);
+    this.extraInstructions.setVisible(false);
+    
+    // Create a dark overlay.
+    this.overlay = this.add.rectangle(this.cameras.main.width/2, this.cameras.main.height/2,
+      this.cameras.main.width, this.cameras.main.height, 0x000000, 0.5);
+    this.overlay.setOrigin(0.5);
+    this.overlay.setDepth(2);
+    this.overlay.setVisible(false);
+    
+    // Sticky note (post-it style) for the garbage can, square 300x300.
+    this.stickyNote = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2,
       "Username: user\nPassword: secret", {
         font: "24px 'Indie Flower'",
         fill: "#000000",
@@ -143,20 +160,27 @@ class FlickerBackgroundScene extends Phaser.Scene {
         padding: { x: 20, y: 20 },
         align: "center"
       }
-    ).setFixedSize(300, 300).setOrigin(0.5).setVisible(false).setDepth(3).setInteractive({ useHandCursor: true });
+    );
+    this.stickyNote.setFixedSize(300, 300);
+    this.stickyNote.setOrigin(0.5);
+    this.stickyNote.setVisible(false);
+    this.stickyNote.setDepth(3);
+    this.stickyNote.setInteractive({ useHandCursor: true });
     this.stickyNote.on("pointerdown", () => {
-      // Hide sticky note & overlay if the note is clicked.
       this.stickyNote.setVisible(false);
       this.overlay.setVisible(false);
     });
-
+    
     // Door message text.
     this.doorMessage = this.add.text(0, 0, "", {
       font: "20px 'Indie Flower'",
       fill: "#ffffff"
-    }).setOrigin(0.5).setDepth(4).setVisible(false);
-
-    // If the sticky note is open, clicking anywhere else closes it.
+    });
+    this.doorMessage.setOrigin(0.5);
+    this.doorMessage.setDepth(4);
+    this.doorMessage.setVisible(false);
+    
+    // Global input: if any area is clicked (other than garbageCan), hide sticky note and overlay.
     this.input.on("pointerdown", (pointer, currentlyOver) => {
       if (this.stickyNote.visible) {
         if (!currentlyOver.some(obj => obj.name === "garbageCan")) {
@@ -165,13 +189,14 @@ class FlickerBackgroundScene extends Phaser.Scene {
         }
       }
     });
-
-    // Immediately resize for correct initial layout.
+    
+    // Call resize immediately to ensure correct layout on first load.
     this.resize({ width: this.cameras.main.width, height: this.cameras.main.height });
-    // Listen for window resizing.
+    
+    // Listen for window resize.
     this.scale.on('resize', this.resize, this);
   }
-
+  
   scheduleFlicker() {
     let delay = Phaser.Math.Between(1000, 3000);
     this.time.delayedCall(delay, () => this.startFlicker());
@@ -187,12 +212,11 @@ class FlickerBackgroundScene extends Phaser.Scene {
       this.scheduleFlicker();
     });
   }
-
+  
   areaClicked(id) {
     console.log("Clicked area:", id);
-
     if (id === "garbageCan") {
-      // Show sticky note with overlay.
+      // Show sticky note with fade-in tween and dark overlay.
       this.overlay.setAlpha(0);
       this.overlay.setVisible(true);
       this.tweens.add({
@@ -207,9 +231,8 @@ class FlickerBackgroundScene extends Phaser.Scene {
         alpha: 1,
         duration: 300
       });
-
     } else if (id === "door") {
-      // Show door locked/unlocked message over the door.
+      // Show door message over the door.
       const doorBox = this.interactiveBoxes.find(item => item.id === "door");
       if (doorBox) {
         this.doorMessage.setPosition(doorBox.box.x, doorBox.box.y);
@@ -223,13 +246,12 @@ class FlickerBackgroundScene extends Phaser.Scene {
       this.time.delayedCall(3000, () => {
         this.doorMessage.setVisible(false);
       });
-
     } else if (id === "doorKeypad") {
-      // Switch background to keypad.png, fill the screen.
+      // Change background to keypad.png and fill screen.
       this.bgDark.setTexture("keypad");
       this.bgDark.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-
-      // Let Phaser repaint first, then show prompt.
+      
+      // Wait briefly to allow the new background to render.
       this.time.delayedCall(100, () => {
         let input = window.prompt("Enter the keypad password:");
         if (input !== null) {
@@ -240,57 +262,64 @@ class FlickerBackgroundScene extends Phaser.Scene {
             this.showDoorMessage("Incorrect password!");
           }
         }
-        // Revert background to darkRoom after the prompt.
+        // Revert background to darkRoom.
         this.bgDark.setTexture("darkRoom");
         this.bgDark.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
       });
     }
-    // Additional monitor interactions can be added here.
+    // Additional interactions for monitors can be added here.
   }
-
+  
   showDoorMessage(msg) {
-    // Show a message over the door for 3 seconds.
     const doorBox = this.interactiveBoxes.find(item => item.id === "door");
     if (doorBox) {
       this.doorMessage.setPosition(doorBox.box.x, doorBox.box.y);
     }
-    this.doorMessage.setText(msg).setVisible(true);
+    this.doorMessage.setText(msg);
+    this.doorMessage.setVisible(true);
     this.time.delayedCall(3000, () => {
       this.doorMessage.setVisible(false);
     });
   }
-
+  
   resize(gameSize) {
-    let { width, height } = gameSize;
+    const width = gameSize.width;
+    const height = gameSize.height;
     this.cameras.resize(width, height);
-
-    // Resize backgrounds.
-    this.bgDark.setPosition(width / 2, height / 2).setDisplaySize(width, height);
-    this.bgLight.setPosition(width / 2, height / 2).setDisplaySize(width, height);
-
+    
+    // Resize and reposition backgrounds.
+    this.bgDark.setPosition(width / 2, height / 2);
+    this.bgDark.setDisplaySize(width, height);
+    this.bgLight.setPosition(width / 2, height / 2);
+    this.bgLight.setDisplaySize(width, height);
+    
     // Resize overlay.
-    this.overlay.setPosition(width / 2, height / 2).setSize(width, height);
-
-    // Recalc positions for interactive boxes.
+    this.overlay.setPosition(width / 2, height / 2);
+    this.overlay.setSize(width, height);
+    
+    // Recalculate positions/sizes for interactive boxes.
     this.interactiveBoxes.forEach(item => {
       const [x_min, y_min, x_max, y_max] = item.coords;
       let boxWidth = (x_max - x_min) * width;
       let boxHeight = (y_max - y_min) * height;
       let x = x_min * width + boxWidth / 2;
       let y = y_min * height + boxHeight / 2;
-      item.box.setPosition(x, y).setSize(boxWidth, boxHeight);
+      item.box.setPosition(x, y);
+      item.box.setSize(boxWidth, boxHeight);
     });
-
-    // Update level counter, instructions, hints, etc.
+    
+    // Update level counter.
     this.levelCounter.setPosition(20, height - 20);
+    
+    // Update hint buttons & instructions.
     this.hintButton.setPosition(width - 20, 10);
     this.hint2Button.setPosition(width - 20, 140);
     this.instructions.setPosition(width - 20, 40);
     this.extraInstructions.setPosition(width - 20, 180);
-
-    // Reposition sticky note if visible.
+    
+    // Reposition sticky note.
     this.stickyNote.setPosition(width / 2, height / 2);
-
+    
     // Reposition door message if visible.
     if (this.doorMessage.visible) {
       const doorBox = this.interactiveBoxes.find(item => item.id === "door");
